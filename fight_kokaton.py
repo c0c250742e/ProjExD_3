@@ -220,9 +220,6 @@ def main():
         # キー入力とこうかとんのアップデート
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
-        # キー入力とこうかとんのアップデート
-        key_lst = pg.key.get_pressed()
-        bird.update(key_lst, screen)
         
         # 【追加課題2】すべてのビームを移動・描画する
         for bm in beams:
