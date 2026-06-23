@@ -36,7 +36,7 @@ class Score:
     def update(self, screen):
         self.img = self.fonto.render(f"Score: {self.score}", 0, self.color)
         screen.blit(self.img, self.rct)
-
+        
 class Bird:
     """
     ゲームキャラクター（こうかとん）に関するクラス
@@ -159,7 +159,8 @@ def main():
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
-    beam = None  # ゲーム初期化時にはビームは存在しない
+    beams = []  # 単発から空リストに変更
+    score = Score() # スコアクラスのインスタンスを作成
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -167,7 +168,7 @@ def main():
             if event.type == pg.QUIT:
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                beam = Beam(bird)            
+                beams.append(Beam(bird))  # リストにビームを追加する          
         screen.blit(bg_img, [0, 0])
         
         # 1. こうかとんと爆弾の衝突判定
@@ -190,22 +191,36 @@ def main():
         # キー入力とこうかとんのアップデート
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
-        if beam is not None:
-            beam.update(screen)
+        # キー入力とこうかとんのアップデート
+        key_lst = pg.key.get_pressed()
+        bird.update(key_lst, screen)
+        
+        # 【追加課題2】すべてのビームを移動・描画する
+        for bm in beams:
+            if bm is not None:
+                bm.update(screen)
+        
+        # 【追加課題2】画面内にいるビームだけをリストに残す（画面外に出たら消去）
+        beams = [bm for bm in beams if bm is not None and check_bound(bm.rct) == (True, True)]
 
-        # 2. 当たった爆弾やビームをNoneにする
+        # 2. 当たった爆弾やビームをNoneにする（2重ループ）
         for i, bomb in enumerate(bombs):
-            if bomb is not None and beam is not None:
-                if beam.rct.colliderect(bomb.rct):
-                    bombs[i] = None
-                    beam = None
+            for j, bm in enumerate(beams):
+                if bomb is not None and bm is not None:
+                    if bm.rct.colliderect(bomb.rct):
+                        bombs[i] = None   # 爆弾を消す印
+                        beams[j] = None   # ビームを消す印
+                        score.score += 1  # スコアを加算
 
-        # 爆弾リストに対して、要素がNoneでないものだけのリストに更新する
+        # 【超重要】印（None）がついた爆弾とビームをリストから完全に削除する
         bombs = [bomb for bomb in bombs if bomb is not None]
+        beams = [bm for bm in beams if bm is not None]
 
         # 3. 生き残っている爆弾のみ位置更新と描画を行う
         for bomb in bombs:
             bomb.update(screen)
+
+        score.update(screen) # スコアの更新と描画
 
         pg.display.update()
         clock.tick(50)
