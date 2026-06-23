@@ -173,9 +173,14 @@ def main():
 
         for bomb in bombs:
             bomb.update(screen)
-        for bomb in bombs:
+        for i, bomb in enumerate(bombs):
             if beam is not None and beam.rct.colliderect(bomb.rct):
                 beam = None
+                bombs[i] = None
+                # こうかとんを喜ぶ画像
+                bird.change_img(6, screen)
+                pg.display.update()
+                time.sleep(1) 
         pg.display.update()
         tmr += 1
         clock.tick(50)
