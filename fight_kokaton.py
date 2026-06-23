@@ -162,23 +162,18 @@ def main():
         for bomb in bombs:
             if bomb is not None: # Noneチェック
                 if bird.rct.colliderect(bomb.rct):
+                    # ゲームオーバー時に，こうかとん画像を切り替え
                     bird.change_img(8, screen)
+
+                    # 【練習4追加】ゲームオーバーの文字を表示
+                    fonto = pg.font.Font(None, 80)
+                    txt = fonto.render("Game Over", True, (255, 0, 0))
+                    # 画面中央付近に配置
+                    screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
+
                     pg.display.update()
                     time.sleep(1)
                     return
-            if bird.rct.colliderect(bomb.rct):
-                # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-                bird.change_img(8, screen)
-
-                # 【練習4追加】ゲームオーバーの文字を表示
-                fonto = pg.font.Font(None, 80)
-                txt = fonto.render("Game Over", True, (255, 0, 0))
-                # 画面中央付近に配置
-                screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
-
-                pg.display.update()
-                time.sleep(1)
-                return
 
         # キー入力とこうかとんのアップデート
         key_lst = pg.key.get_pressed()
