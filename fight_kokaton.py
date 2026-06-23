@@ -152,6 +152,23 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+class Explosion:
+    """
+    爆弾が撃ち落とされたときの爆発エフェクトに関するクラス
+    """
+    def __init__(self, bomb: Bomb, life: int):
+        img = pg.image.load("fig/explosion.gif")
+        self.imgs = [img, pg.transform.flip(img, True, True)]
+        self.img  = self.imgs[0]
+        self.rct  = self.img.get_rect()
+        self.rct.center = bomb.rct.center
+        self.life = life
+
+    def update(self, screen: pg.Surface):
+        self.life -= 1
+        if self.life > 0:
+            self.img = self.imgs[self.life // 5 % 2]  # 5フレームごとに反転
+            screen.blit(self.img, self.rct)
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
@@ -161,6 +178,7 @@ def main():
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     beams = []  # 単発から空リストに変更
     score = Score() # スコアクラスのインスタンスを作成
+    exps = []  # 爆発エフェクトのリストを追加
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -208,6 +226,8 @@ def main():
             for j, bm in enumerate(beams):
                 if bomb is not None and bm is not None:
                     if bm.rct.colliderect(bomb.rct):
+                        # 衝突した爆弾の位置に寿命50フレームの爆発を生成
+                        exps.append(Explosion(bomb, 50))
                         bombs[i] = None   # 爆弾を消す印
                         beams[j] = None   # ビームを消す印
                         score.score += 1  # スコアを加算
@@ -219,6 +239,12 @@ def main():
         # 3. 生き残っている爆弾のみ位置更新と描画を行う
         for bomb in bombs:
             bomb.update(screen)
+
+        # 爆発エフェクトの移動・描画
+        for exp in exps:
+            exp.update(screen)
+        # 寿命（life）が0より大きいものだけをリストに残す
+        exps = [exp for exp in exps if exp.life > 0]
 
         score.update(screen) # スコアの更新と描画
 
